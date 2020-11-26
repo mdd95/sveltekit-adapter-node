@@ -4,14 +4,13 @@ import { parse, URLSearchParams } from 'url';
 import sirv from 'sirv';
 import { render } from '@sveltejs/app-utils/renderer';
 import { get_body } from '@sveltejs/app-utils/http';
-import type { PageComponentManifest, EndpointManifest, Method } from '@sveltejs/app-utils';
 
 const manifest = require('./manifest.js');
 const client = require('./client.json');
 
 const { PORT = 3000 } = process.env;
 
-const mutable = (dir: string) =>
+const mutable = (dir) =>
 	sirv(dir, {
 		etag: true,
 		maxAge: 0
@@ -20,7 +19,7 @@ const mutable = (dir: string) =>
 const static_handler = mutable('static');
 const prerendered_handler = fs.existsSync('build/prerendered')
 	? mutable('build/prerendered')
-	: (_req: http.IncomingMessage, _res: http.ServerResponse, next: () => void) => next();
+	: (_req, _res, next) => next();
 
 const assets_handler = sirv('build/assets', {
 	maxAge: 31536000,
@@ -40,9 +39,9 @@ const server = http.createServer((req, res) => {
 				const rendered = await render(
 					{
 						host: null, // TODO
-						method: req.method as Method,
-						headers: req.headers as Record<string, string>, // TODO: what about repeated headers, i.e. string[]
-						path: parsed.pathname as string,
+						method: req.method,
+						headers: req.headers, // TODO: what about repeated headers, i.e. string[]
+						path: parsed.pathname,
 						body: await get_body(req),
 						query: new URLSearchParams(parsed.query || '')
 					},
@@ -53,7 +52,7 @@ const server = http.createServer((req, res) => {
 						client,
 						root,
 						setup,
-						load: (route: PageComponentManifest | EndpointManifest) =>
+						load: (route) =>
 							require(`./routes/${route.name}.js`),
 						dev: false,
 						only_prerender: false

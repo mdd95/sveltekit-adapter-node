@@ -1,17 +1,11 @@
 import fs from 'fs';
-import { RouteManifest } from '@sveltejs/app-utils';
 import { copy } from '@sveltejs/app-utils/files';
 import { prerender } from '@sveltejs/app-utils/renderer';
-import { Logger } from '@sveltejs/app-utils/renderer/prerender';
 
 module.exports = async function adapter({
 	dir,
 	manifest,
 	log
-}: {
-	dir: string;
-	manifest: RouteManifest;
-	log: Logger;
 }) {
 	const out = 'build'; // TODO implement adapter options
 
