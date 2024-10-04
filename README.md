@@ -2,6 +2,12 @@
 
 [Adapter](https://kit.svelte.dev/docs/adapters) for SvelteKit apps that generates a standalone Node server with added support for WebSocket.
 
+## Installation
+
+```bash
+npm install -D sveltekit-adapter-node-with-websocket
+```
+
 ## Usage examples
 
 Create websocket.js in `src` folder
