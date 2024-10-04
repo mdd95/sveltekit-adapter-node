@@ -4,6 +4,7 @@ import { rollup } from 'rollup';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
+import typescript from '@rollup/plugin-typescript';
 
 const files = fileURLToPath(new URL('./files', import.meta.url).href);
 
@@ -51,7 +52,7 @@ export default function (opts = {}) {
 
 			const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
 
-			const SHARED_OPTIONS = {
+			let opt = {
 				external: [
 					// dependencies could have deep exports, so we need a regex
 					...Object.keys(pkg.dependencies || {}).map((d) => new RegExp(`^${d}(\\/.*)?$`))
@@ -76,7 +77,7 @@ export default function (opts = {}) {
 					index: `${tmp}/index.js`,
 					manifest: `${tmp}/manifest.js`
 				},
-				...SHARED_OPTIONS
+				...opt
 			});
 
 			await bundle.write({
@@ -87,9 +88,23 @@ export default function (opts = {}) {
 			});
 
 			if (serverUpgrade) {
+				opt.plugins = [
+					// Error: This expression is not callable
+					// @ts-ignore
+					typescript({
+						compilerOptions: {
+							allowJs: true,
+							sourceMap: false,
+							target: 'es2022',
+							module: 'node16',
+							moduleResolution: 'node16'
+						}
+					}),
+					...opt.plugins
+				];
 				const upgrade_bundle = await rollup({
-					input: `src/${serverUpgrade}.js`,
-					...SHARED_OPTIONS
+					input: serverUpgrade,
+					...opt
 				});
 
 				await upgrade_bundle.write({

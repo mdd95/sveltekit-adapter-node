@@ -10,11 +10,11 @@ npm install -D sveltekit-adapter-node-with-websocket
 
 ## Usage examples
 
-Create websocket.js in `src` folder
-
-```js
-// src/websocket.js
+```ts
+// websocket.ts
 import { WebSocketServer } from 'ws';
+import type http from 'node:http';
+import type internal from 'node:stream';
 
 const wss = new WebSocketServer({ noServer: true });
 
@@ -24,17 +24,13 @@ wss.on('connection', (ws) => {
 	// Listen to connection
 });
 
-/**
- *
- * @param {import('http').IncomingMessage} req
- * @param {import('stream').Duplex} socket
- * @param {Buffer} head
- */
-export function upgrade(req, socket, head) {
+export function upgrade(req: http.IncomingMessage, socket: internal.Duplex, head: Buffer) {
 	if (req.url === '/') {
-		wss.handleUpgrade(req, socket, head, (ws) => {
+		wss.handleUpgrade(req, socket, head, function connection(ws) {
 			wss.emit('connection', ws, req);
 		});
+	} else {
+		socket.destroy();
 	}
 }
 ```
@@ -51,7 +47,10 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
-		adapter: adapter({ serverUpgrade: 'websocket' })
+		adapter: adapter({
+			// path
+			serverUpgrade: 'websocket.ts'
+		})
 	}
 };
 
@@ -61,9 +60,9 @@ export default config;
 During development, you can create a separate server
 
 ```js
-// dev.js
+// dev.ts
 import http from 'node:http';
-import { upgrade } from './src/websocket.js';
+import { upgrade } from './websocket.ts';
 
 const PORT = 8000;
 
@@ -75,15 +74,15 @@ server.listen(PORT, () => {
 });
 ```
 
-Then run it using `node` or `nodemon`:
+Then run it using `tsx`:
 
 ```bash
-nodemon dev.js
+npx tsx watch dev.ts
 ```
 
 ## Changelog
 
-[The Changelog for this package is available on GitHub](https://github.com/sveltejs/kit/blob/main/packages/adapter-node/CHANGELOG.md).
+[The Changelog for this package is available on GitHub](CHANGELOG).
 
 ## License
 
