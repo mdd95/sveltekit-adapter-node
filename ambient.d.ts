@@ -18,6 +18,10 @@ declare module 'SERVER' {
 	export { Server } from '@sveltejs/kit';
 }
 
+declare module 'SERVER_UPGRADE' {
+	export function upgrade(...args: any[]): void;
+}
+
 declare namespace App {
 	export interface Platform {
 		/**

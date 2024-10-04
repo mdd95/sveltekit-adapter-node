@@ -1,8 +1,8 @@
 # @sveltejs/adapter-node
 
 ## 5.2.5
-### Patch Changes
 
+### Patch Changes
 
 - chore: upgrade rollup plugins ([#12706](https://github.com/sveltejs/kit/pull/12706))
 
@@ -10,14 +10,14 @@
   - @sveltejs/kit@2.6.0
 
 ## 5.2.4
-### Patch Changes
 
+### Patch Changes
 
 - chore: upgrade polka to 1.0.0-next.28 ([#12693](https://github.com/sveltejs/kit/pull/12693))
 
 ## 5.2.3
-### Patch Changes
 
+### Patch Changes
 
 - fix: import `node:process` instead of using globals ([#12641](https://github.com/sveltejs/kit/pull/12641))
 
@@ -25,8 +25,8 @@
   - @sveltejs/kit@2.5.28
 
 ## 5.2.2
-### Patch Changes
 
+### Patch Changes
 
 - chore: configure provenance in a simpler manner ([#12570](https://github.com/sveltejs/kit/pull/12570))
 
@@ -34,8 +34,8 @@
   - @sveltejs/kit@2.5.22
 
 ## 5.2.1
-### Patch Changes
 
+### Patch Changes
 
 - chore: package provenance ([#12567](https://github.com/sveltejs/kit/pull/12567))
 

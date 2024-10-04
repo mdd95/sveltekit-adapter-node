@@ -11,7 +11,7 @@ export default [
 			format: 'esm'
 		},
 		plugins: [nodeResolve({ preferBuiltins: true }), commonjs(), json()],
-		external: ['ENV', 'HANDLER', ...builtinModules]
+		external: ['ENV', 'HANDLER', 'SERVER_UPGRADE', ...builtinModules]
 	},
 	{
 		input: 'src/env.js',

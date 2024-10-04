@@ -9,10 +9,10 @@ const files = fileURLToPath(new URL('./files', import.meta.url).href);
 
 /** @type {import('./index.js').default} */
 export default function (opts = {}) {
-	const { out = 'build', precompress = true, envPrefix = '' } = opts;
+	const { out = 'build', precompress = true, envPrefix = '', serverUpgrade = null } = opts;
 
 	return {
-		name: '@sveltejs/adapter-node',
+		name: 'sveltekit-adapter-node-with-websocket',
 
 		async adapt(builder) {
 			const tmp = builder.getBuildDirectory('adapter-node');
@@ -46,16 +46,12 @@ export default function (opts = {}) {
 				].join('\n\n')
 			);
 
+			// write empty upgrade handler file
+			writeFileSync(`${out}/upgrade.js`, 'export const upgrade = null;\n\n');
+
 			const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
 
-			// we bundle the Vite output so that deployments only need
-			// their production dependencies. Anything in devDependencies
-			// will get included in the bundled code
-			const bundle = await rollup({
-				input: {
-					index: `${tmp}/index.js`,
-					manifest: `${tmp}/manifest.js`
-				},
+			const SHARED_OPTIONS = {
 				external: [
 					// dependencies could have deep exports, so we need a regex
 					...Object.keys(pkg.dependencies || {}).map((d) => new RegExp(`^${d}(\\/.*)?$`))
@@ -70,6 +66,17 @@ export default function (opts = {}) {
 					// @ts-ignore https://github.com/rollup/plugins/issues/1329
 					json()
 				]
+			};
+
+			// we bundle the Vite output so that deployments only need
+			// their production dependencies. Anything in devDependencies
+			// will get included in the bundled code
+			const bundle = await rollup({
+				input: {
+					index: `${tmp}/index.js`,
+					manifest: `${tmp}/manifest.js`
+				},
+				...SHARED_OPTIONS
 			});
 
 			await bundle.write({
@@ -79,12 +86,25 @@ export default function (opts = {}) {
 				chunkFileNames: 'chunks/[name]-[hash].js'
 			});
 
+			if (serverUpgrade) {
+				const upgrade_bundle = await rollup({
+					input: `src/${serverUpgrade}.js`,
+					...SHARED_OPTIONS
+				});
+
+				await upgrade_bundle.write({
+					file: `${out}/upgrade.js`,
+					format: 'esm'
+				});
+			}
+
 			builder.copy(files, out, {
 				replace: {
 					ENV: './env.js',
 					HANDLER: './handler.js',
 					MANIFEST: './server/manifest.js',
 					SERVER: './server/index.js',
+					SERVER_UPGRADE: './upgrade.js',
 					SHIMS: './shims.js',
 					ENV_PREFIX: JSON.stringify(envPrefix)
 				}

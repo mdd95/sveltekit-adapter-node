@@ -1,5 +1,6 @@
 import process from 'node:process';
 import { handler } from 'HANDLER';
+import { upgrade } from 'SERVER_UPGRADE';
 import { env } from 'ENV';
 import polka from 'polka';
 
@@ -99,6 +100,7 @@ server.server.on(
 	}
 );
 
+if (upgrade) server.server.on('upgrade', upgrade);
 process.on('SIGTERM', graceful_shutdown);
 process.on('SIGINT', graceful_shutdown);
 

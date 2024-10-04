@@ -11,4 +11,6 @@ interface AdapterOptions {
 	envPrefix?: string;
 }
 
-export default function plugin(options?: AdapterOptions): Adapter;
+export default function plugin(
+	options?: AdapterOptions & { serverUpgrade?: string | null }
+): Adapter;
