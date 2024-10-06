@@ -1,7 +1,7 @@
 import process from 'node:process';
 import { handler } from 'HANDLER';
-import { upgrade } from 'SERVER_UPGRADE';
 import { env } from 'ENV';
+import plugin from 'PLUGIN';
 import polka from 'polka';
 
 export const path = env('SOCKET_PATH', false);
@@ -100,7 +100,7 @@ server.server.on(
 	}
 );
 
-if (upgrade) server.server.on('upgrade', upgrade);
+plugin(server.server);
 process.on('SIGTERM', graceful_shutdown);
 process.on('SIGINT', graceful_shutdown);
 

@@ -1,7 +1,7 @@
 {
-	"name": "sveltekit-adapter-node-with-websocket",
+	"name": "@mdd95/sveltekit-adapter-node",
 	"version": "0.2.0",
-	"description": "Adapter for SvelteKit apps that generates a standalone Node server with WebSockets",
+	"description": "Adapter for SvelteKit apps that generates a standalone Node server with added support for WebSocket as plugin.",
 	"keywords": [
 		"adapter",
 		"deploy",
@@ -9,11 +9,12 @@
 		"node.js",
 		"svelte",
 		"sveltekit",
-		"websocket"
+		"websocket",
+		"socket.io"
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/mdd95/sveltekit-adapter-node-with-websocket"
+		"url": "https://github.com/mdd95/sveltekit-adapter-node"
 	},
 	"license": "MIT",
 	"homepage": "https://kit.svelte.dev",

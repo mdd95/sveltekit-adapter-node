@@ -10,10 +10,10 @@ const files = fileURLToPath(new URL('./files', import.meta.url).href);
 
 /** @type {import('./index.js').default} */
 export default function (opts = {}) {
-	const { out = 'build', precompress = true, envPrefix = '', serverUpgrade = null } = opts;
+	const { out = 'build', precompress = true, envPrefix = '', pluginPath = null } = opts;
 
 	return {
-		name: 'sveltekit-adapter-node-with-websocket',
+		name: '@mdd95/sveltekit-adapter-node',
 
 		async adapt(builder) {
 			const tmp = builder.getBuildDirectory('adapter-node');
@@ -48,7 +48,7 @@ export default function (opts = {}) {
 			);
 
 			// write empty upgrade handler file
-			writeFileSync(`${out}/upgrade.js`, 'export const upgrade = null;\n\n');
+			writeFileSync(`${out}/plugin.js`, 'export default function plugin(server) {};\n\n');
 
 			const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
 
@@ -87,7 +87,7 @@ export default function (opts = {}) {
 				chunkFileNames: 'chunks/[name]-[hash].js'
 			});
 
-			if (serverUpgrade) {
+			if (pluginPath) {
 				opt.plugins = [
 					// Error: This expression is not callable
 					// @ts-ignore
@@ -102,13 +102,13 @@ export default function (opts = {}) {
 					}),
 					...opt.plugins
 				];
-				const upgrade_bundle = await rollup({
-					input: serverUpgrade,
+				const mbundle = await rollup({
+					input: pluginPath,
 					...opt
 				});
 
-				await upgrade_bundle.write({
-					file: `${out}/upgrade.js`,
+				await mbundle.write({
+					file: `${out}/plugin.js`,
 					format: 'esm'
 				});
 			}
@@ -119,7 +119,7 @@ export default function (opts = {}) {
 					HANDLER: './handler.js',
 					MANIFEST: './server/manifest.js',
 					SERVER: './server/index.js',
-					SERVER_UPGRADE: './upgrade.js',
+					PLUGIN: './plugin.js',
 					SHIMS: './shims.js',
 					ENV_PREFIX: JSON.stringify(envPrefix)
 				}

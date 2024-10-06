@@ -12,5 +12,7 @@ interface AdapterOptions {
 }
 
 export default function plugin(
-	options?: AdapterOptions & { serverUpgrade?: string | null }
+	options?: AdapterOptions & {
+		pluginPath?: string | null;
+	}
 ): Adapter;

@@ -1,4 +1,8 @@
-# sveltekit-adapter-node-with-websocket
+# @mdd95/sveltekit-adapter-node
+
+## 1.0.0
+
+- feat: supports for socket.io
 
 ## 0.2.0
 
