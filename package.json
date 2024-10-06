@@ -1,6 +1,6 @@
 {
 	"name": "@mdd95/sveltekit-adapter-node",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"description": "Adapter for SvelteKit apps that generates a standalone Node server with added support for WebSocket as plugin.",
 	"keywords": [
 		"adapter",
