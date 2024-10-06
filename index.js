@@ -88,20 +88,7 @@ export default function (opts = {}) {
 			});
 
 			if (pluginPath) {
-				opt.plugins = [
-					// Error: This expression is not callable
-					// @ts-ignore
-					typescript({
-						compilerOptions: {
-							allowJs: true,
-							sourceMap: false,
-							target: 'es2022',
-							module: 'node16',
-							moduleResolution: 'node16'
-						}
-					}),
-					...opt.plugins
-				];
+				opt.plugins = [typescript({ sourceMap: false }), ...opt.plugins];
 				const mbundle = await rollup({
 					input: pluginPath,
 					...opt
