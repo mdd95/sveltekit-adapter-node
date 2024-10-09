@@ -1,6 +1,6 @@
 # @mdd95/adapter-node
 
-[Adapter](https://kit.svelte.dev/docs/adapters) for SvelteKit apps that generates a standalone Node server with added support for WebSocket as plugin.
+[Adapter](https://kit.svelte.dev/docs/adapters) for SvelteKit apps that generates a standalone Node server with added support for WebSocket.
 
 ## Installation
 
@@ -13,13 +13,15 @@ npm install -D @mdd95/sveltekit-adapter-node
 ### Using [Node.js WebSocket library](https://github.com/websockets/ws)
 
 ```ts
-// plugin.ts
+// src/websocket.ts
 import { WebSocketServer } from 'ws';
 import type http from 'node:http';
 
 const wss = new WebSocketServer({ noServer: true });
 
 wss.on('connection', (ws) => {
+	ws.on('error', console.error);
+
 	ws.on('message', (data) => {
 		console.log('received: %s', data);
 	});
@@ -27,15 +29,26 @@ wss.on('connection', (ws) => {
 
 export default function plugin(server: http.Server) {
 	server.on('upgrade', function (req, socket, head) {
-		if (req.url === '/') {
+		if (req.url === '/ws') {
 			wss.handleUpgrade(req, socket, head, (ws) => {
 				wss.emit('connection', ws, req);
 			});
-		} else {
-			socket.destroy();
 		}
 	});
 }
+```
+
+```svelte
+<!-- src/routes/+page.svelte -->
+<script lang="ts">
+	$effect(() => {
+		const socket = new WebSocket('ws://localhost:5173/ws')
+
+		return () => {
+			socket.close();
+		}
+	});
+</script>
 ```
 
 Update svelte.config.js
@@ -51,7 +64,7 @@ const config = {
 
 	kit: {
 		adapter: adapter({
-			pluginPath: 'plugin.ts'
+			pluginPath: './src/websocket.ts'
 		})
 	}
 };
@@ -59,54 +72,15 @@ const config = {
 export default config;
 ```
 
-During development, you can create a separate server
-
-```js
-// dev.ts
-import http from 'node:http';
-import plugin from './plugin.ts';
-
-const PORT = 8000;
-const server = http.createServer();
-
-plugin(server);
-server.listen(PORT, () => {
-	console.log(`Listening on http://localhost:${PORT}`);
-});
-```
-
-Then run it using `tsx`:
-
-```bash
-npx tsx watch dev.ts
-```
-
-And run it parallel using `concurrently`
-
-```json
-// package.json
-{
-	"scripts": {
-		"dev:vite": "vite dev",
-		"dev:ws": "tsx watch dev.ts",
-		"dev": "concurrently --kill-others \"npm run dev:vite\" \"npm run dev:ws\"",
-		"preview": "node build/index.js"
-	}
-}
-```
-
 ### Using [Socket.IO](https://github.com/socketio/socket.io)
 
 ```ts
-// plugin.ts
-import { dev } from '$app/environment';
+// src/websocket.ts
 import { Server } from 'socket.io';
 import type http from 'node:http';
 
 export default function plugin(server: http.Server) {
-	const io = new Server(server, {
-		cors: { origin: dev && '*' }
-	});
+	const io = new Server(server);
 
 	io.on('connection', (socket) => {
 		// Handle connection
@@ -117,13 +91,43 @@ export default function plugin(server: http.Server) {
 ```svelte
 <!-- src/routes/+page.svelte -->
 <script lang="ts">
-	import { dev } from '$app/environment';
 	import { io } from 'socket.io-client';
 
 	$effect(() => {
-		const socket = io(dev && 'ws://localhost:8000');
+		const socket = io();
+
+		return () => {
+			socket.disconnect();
+		}
 	});
 </script>
+```
+
+### Development
+
+During development, you can create a vite plugin
+
+```ts
+// vite.config.ts
+import { sveltekit } from '@sveltejs/kit/vite';
+import { defineConfig, type Plugin } from 'vite';
+import plugin from './src/websocket';
+
+function websocket(): Plugin {
+	return {
+		name: 'websocket',
+		configureServer(server) {
+			if (server.httpServer) plugin(server.httpServer);
+		},
+		configurePreviewServer(server) {
+			if (server.httpServer) plugin(server.httpServer);
+		}
+	};
+}
+
+export default defineConfig({
+	plugins: [sveltekit(), websocket()]
+});
 ```
 
 ## Changelog
